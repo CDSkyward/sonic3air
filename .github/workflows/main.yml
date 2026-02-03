@@ -1,0 +1,33 @@
+name: Build Sonic 3 AIR (Linux)
+on:
+  push:
+    branches:
+      - main
+jobs:
+  build:
+    runs-on:
+      - ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+            submodules: recursive
+      - name: Install Dependencies
+        run: |
+          sudo apt-get install g++ cmake libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libpulse-dev libxcomposite-dev libxxf86vm-dev libcurl4-openssl-dev
+      - name: Build
+        run : |
+          mkdir ./Oxygen/sonic3air/build/_cmake/build
+          cd ./Oxygen/sonic3air/build/_cmake/build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build .
+      - name: Move artifacts
+        run: |
+          mkdir artifacts
+          mv ./Oxygen/sonic3air* ./artifacts
+          tar -czvf linux.tar.gz -C ./artifacts .
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3air-linux
+          path: linux.tar.gz
